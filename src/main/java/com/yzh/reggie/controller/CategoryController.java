@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author 杨振华
@@ -66,5 +67,23 @@ public class CategoryController {
         log.info("修改分类信息：{}",category);
         categoryService.updateById(category);
         return R.success("分类信息修改成功");
+    }
+
+    /**
+     * 根据条件查询分类数据
+     *
+     * @param category 类别
+     * @return {@link R}<{@link Category}>
+     */
+    @GetMapping("/list")
+    public R<List<Category>> list(Category category){
+        LambdaQueryWrapper<Category> categoryLambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+        List<Category> list = categoryService.list(categoryLambdaQueryWrapper
+                .eq(category.getType() != null, Category::getType, category.getType())
+                .orderByAsc(Category::getSort)
+                .orderByDesc(Category::getUpdateTime));
+
+        return R.success(list);
     }
 }
