@@ -7,6 +7,7 @@ import com.yzh.reggie.common.R;
 import com.yzh.reggie.dto.DishDto;
 import com.yzh.reggie.entity.Category;
 import com.yzh.reggie.entity.Dish;
+import com.yzh.reggie.entity.Setmeal;
 import com.yzh.reggie.service.CategoryService;
 import com.yzh.reggie.service.DishFlavorService;
 import com.yzh.reggie.service.DishService;
@@ -141,5 +142,61 @@ public class DishController {
 
         return R.success(list);
 
+    }
+
+    @DeleteMapping()
+    public R<String> delete(@RequestParam List<Long> ids){
+        dishService.deleteWithFlavor(ids);
+        return R.success("菜品删除成功！");
+    }
+
+
+    /**
+     * 菜品停售
+     * @param ids
+     * @return
+     */
+    @PostMapping("/status/0")
+    public R<String> statusStop(@RequestParam List<Long> ids){
+        // 根据输入的ids，进行停售
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper
+                .in(Dish::getId,ids)
+                .eq(Dish::getStatus,1);
+
+        int count = dishService.count(queryWrapper);
+        if(count > 0) {
+            for (Long id : ids) {
+                Dish dish = dishService.getById(id);
+                dish.setStatus(0);
+                dishService.updateById(dish);
+            }
+        }
+        return R.success("菜品已经停售！");
+    }
+
+    /**
+     * 菜品启售
+     *
+     * @param ids id
+     * @return {@link R}<{@link String}>
+     */
+    @PostMapping("/status/1")
+    public R<String> statusStart(@RequestParam List<Long> ids){
+        // 根据输入的ids，进行停售
+        LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper
+                .in(Dish::getId,ids)
+                .eq(Dish::getStatus,0);
+
+        int count = dishService.count(queryWrapper);
+        if(count > 0) {
+            for (Long id : ids) {
+                Dish dish = dishService.getById(id);
+                dish.setStatus(1);
+                dishService.updateById(dish);
+            }
+        }
+        return R.success("菜品已经启售！");
     }
 }

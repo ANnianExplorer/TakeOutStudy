@@ -4,6 +4,7 @@ package com.yzh.reggie.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.util.BeanUtil;
+import com.yzh.reggie.common.CustomException;
 import com.yzh.reggie.dto.DishDto;
 import com.yzh.reggie.entity.Dish;
 import com.yzh.reggie.entity.DishFlavor;
@@ -80,12 +81,14 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
         // 更新口味表
         LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
 
+        // 先删除
         dishFlavorService.remove(
                 dishFlavorLambdaQueryWrapper
                         .eq(DishFlavor::getDishId,dishDto.getId()
                         )
         );
 
+        // 再封装
         List<DishFlavor> flavors = dishDto.getFlavors();
         flavors = flavors.stream().map((item) -> {
             item.setDishId(dishDto.getId());
@@ -94,5 +97,30 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
 
         // 保存
         dishFlavorService.saveBatch(flavors);
+    }
+
+    /**
+     * 删除菜品及其口味
+     *
+     * @param ids id
+     */
+    @Override
+    public void deleteWithFlavor(List<Long> ids) {
+        // 先查询是否存在启售
+        LambdaQueryWrapper<Dish> dishLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        dishLambdaQueryWrapper
+                .in(Dish::getId,ids)
+                .eq(Dish::getStatus,1);
+        if (this.count(dishLambdaQueryWrapper) > 0){
+            throw new CustomException("该菜品正在售卖中，不可删除！");
+        }
+        // 已停售
+        this.removeByIds(ids);
+
+        // 在dish_flavor中
+        LambdaQueryWrapper<DishFlavor> dishFlavorLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        dishFlavorLambdaQueryWrapper.in(DishFlavor::getDishId,ids);
+
+        dishFlavorService.remove(dishFlavorLambdaQueryWrapper);
     }
 }
