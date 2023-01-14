@@ -92,6 +92,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
             return item;
         }).collect(Collectors.toList());
 
+        // 保存
         dishFlavorService.saveBatch(flavors);
     }
 }
