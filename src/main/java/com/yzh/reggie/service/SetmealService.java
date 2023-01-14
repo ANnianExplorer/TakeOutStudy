@@ -1,7 +1,10 @@
 package com.yzh.reggie.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.yzh.reggie.dto.SetmealDto;
 import com.yzh.reggie.entity.Setmeal;
+
+import java.util.List;
 
 
 /**
@@ -11,5 +14,7 @@ import com.yzh.reggie.entity.Setmeal;
  * @date 2023/01/13
  */
 public interface SetmealService extends IService<Setmeal> {
+    public void saveDish(SetmealDto setmealDto);
 
+    public void removeWithDish(List<Long> ids);
 }
