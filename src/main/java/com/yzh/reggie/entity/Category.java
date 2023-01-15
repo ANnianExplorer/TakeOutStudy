@@ -55,8 +55,4 @@ public class Category implements Serializable {
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateUser;
 
-
-    //是否删除
-    //private Integer isDeleted;
-
 }
