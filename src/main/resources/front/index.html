@@ -41,12 +41,12 @@
       </div>
       <div class="divBody">
         <div class="divType">
-          <ul>
+          <ul><!--侧边栏类别-->
             <li v-for="(item,index) in categoryList" :key="index" @click="categoryClick(index,item.id,item.type)" :class="{active:activeType === index}">{{item.name}}</li>
           </ul>
         </div>
         <div class="divMenu">
-          <div>
+          <div><!--菜肴详细信息-->
             <div class="divItem" v-for="(item,index) in dishList" :key="index" @click="dishDetails(item)">
               <el-image :src="imgPathConvert(item.image)" >
                 <div slot="error" class="image-slot">
@@ -60,12 +60,12 @@
                 <div class="divBottom"><span>￥</span><span>{{item.price/100}}</span></div>
                 <div class="divNum">
                   <div class="divSubtract" v-if="item.number > 0">
-                    <img src="./images/subtract.png" @click.prevent.stop="subtractCart(item)"/>
+                    <img src="./images/subtract.png" @click.prevent.stop="subtractCart(item)"><!--减去购物车-->
                   </div>
                   <div class="divDishNum">{{item.number}}</div>
                   <div class="divTypes" v-if="item.flavors && item.flavors.length > 0 && !item.number " @click.prevent.stop="chooseFlavorClick(item)">选择规格</div>
                   <div class="divAdd" v-else>
-                    <img src="./images/add.png" @click.prevent.stop="addCart(item)"/>
+                    <img src="./images/add.png" @click.prevent.stop="addCart(item)"/><!--添加购物车-->
                   </div>
                 </div>
               </div>
@@ -78,6 +78,8 @@
         <div class="divLayerLeft"></div>
         <div class="divLayerRight"></div>
       </div>
+
+      <!--购物车-->
       <div class="divCart" v-if="categoryList.length > 0">
           <div :class="{imgCartActive: cartData && cartData.length > 0, imgCart:!cartData || cartData.length<1}" @click="openCart"></div>
           <div :class="{divGoodsNum:1===1, moreGoods:cartData && cartData.length > 99}" v-if="cartData && cartData.length > 0">{{ goodsNum }}</div>
@@ -129,17 +131,19 @@
               </div>
               <div class="divNum">
                 <div class="divSubtract">
-                  <img src="./images/subtract.png" @click="cartNumberSubtract(item)"/>
+                  <img src="./images/subtract.png" @click="cartNumberSubtract(item)"/><!--减去购物车物品数量- -->
                 </div>
                 <div class="divDishNum">{{item.number}}</div>
                 <div class="divAdd">
-                  <img src="./images/add.png" @click="cartNumAdd(item)"/>
+                  <img src="./images/add.png" @click="cartNumAdd(item)"/><!--增加购物车物品数量- -->
                 </div>
               </div>
               <div class="divSplit"></div>
               </div>
           </div>
         </van-popup>
+      <!--=============================================================================================-->
+      <!--菜品详情页-->
         <van-dialog v-model="detailsDialog.show" 
                     :show-confirm-button="false" 
                     class="detailsDialog" 
@@ -174,6 +178,9 @@
             <img src="./images/close.png"/>
           </div>
         </van-dialog>
+      <!--===================================================================================-->
+      <!--套餐详情页-->
+      <!--设置膳食详细信息对话框-->
         <van-dialog v-model="setMealDialog.show" 
                     :show-confirm-button="false" 
                     class="setMealDetailsDialog" 
@@ -183,17 +190,17 @@
           <div class="divContainer">
             <div class="title">{{setMealDialog.item.name}}</div>
               <div class="item" v-for="(item,index) in setMealDialog.item.list" :key="index">
-                <el-image :src="imgPathConvert(item.image)">
+                <!--<el-image :src="imgPathConvert(item.image)">
                   <div slot="error" class="image-slot">
                     <img src="./images/noImg.png"/>
                   </div>
-                </el-image>
+                </el-image>-->
                 <div class="divSubTitle">{{item.name + '(' + item.copies + '份)' }}
                   <div class="divPrice">
                     <span>￥</span><span>{{item.price/100}}</span>
                   </div>
                 </div>                
-                <div class="content">{{item.description}}</div>
+                <!--<div class="content">{{item.description}}</div>-->
               </div>
             </div>
           <div class="divNum">
@@ -594,9 +601,7 @@
                   this.$notify({ type:'warning', message:res.msg});
                 }
               }
-
             }
-
           }
       })
   </script>

@@ -105,6 +105,7 @@ public class DishServiceImpl extends ServiceImpl<DishMapper, Dish> implements Di
      * @param ids id
      */
     @Override
+    @Transactional
     public void deleteWithFlavor(List<Long> ids) {
         // 先查询是否存在启售
         LambdaQueryWrapper<Dish> dishLambdaQueryWrapper = new LambdaQueryWrapper<>();

@@ -5,12 +5,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.yzh.reggie.common.CustomException;
 import com.yzh.reggie.common.R;
+import com.yzh.reggie.dto.DishDto;
 import com.yzh.reggie.dto.SetmealDto;
 import com.yzh.reggie.entity.Category;
 import com.yzh.reggie.entity.Dish;
 import com.yzh.reggie.entity.Setmeal;
 import com.yzh.reggie.entity.SetmealDish;
 import com.yzh.reggie.service.CategoryService;
+import com.yzh.reggie.service.DishService;
 import com.yzh.reggie.service.SetmealDishService;
 import com.yzh.reggie.service.SetmealService;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,9 @@ import java.util.stream.Collectors;
 public class SetmealController {
     @Resource
     private SetmealService setmealService;
+
+    @Resource
+    private DishService dishService;
 
     @Resource
     private CategoryService categoryService;
@@ -185,5 +190,34 @@ public class SetmealController {
             }
         }
         return R.success("套餐已经启售！");
+    }
+
+    /**
+     * 点击套餐图片查看套餐具体内容
+     * 前端主要要展示的信息是:套餐中菜品的基本信息，图片，菜品描述，以及菜品的份数
+     * @param id
+     * @return
+     */
+    @GetMapping("/dish/{id}")
+    public R<SetmealDto> dish(@PathVariable("id") Long id) {
+        log.info("套餐详情",id);
+
+        // 获取套餐
+        Setmeal setmeal = setmealService.getById(id);
+        SetmealDto setmealDto = new SetmealDto();
+
+        // 对象拷贝
+        BeanUtils.copyProperties(setmeal,setmealDto);
+
+        LambdaQueryWrapper<SetmealDish> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SetmealDish::getSetmealId,id);
+
+        // 获得数据
+        List<SetmealDish> list = setmealDishService.list(queryWrapper);
+
+        setmealDto.setSetmealDishes(list);
+
+
+        return R.success(setmealDto);
     }
 }

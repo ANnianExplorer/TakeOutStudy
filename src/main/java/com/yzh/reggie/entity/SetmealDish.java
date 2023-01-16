@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * 套餐菜品关系
  *
  * @author 杨振华
- * @date 2023/01/14
+ * &#064;date  2023/01/14
  */
 @Data
 public class SetmealDish implements Serializable {
@@ -36,7 +36,7 @@ public class SetmealDish implements Serializable {
     //菜品原价
     private BigDecimal price;
 
-    //份数
+    //菜品份数
     private Integer copies;
 
 
@@ -61,5 +61,5 @@ public class SetmealDish implements Serializable {
 
 
     //是否删除
-    private Integer isDeleted;
+    //private Integer isDeleted;
 }
