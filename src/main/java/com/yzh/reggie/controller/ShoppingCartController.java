@@ -92,4 +92,42 @@ public class ShoppingCartController {
         return R.success("购物车已清空！");
     }
 
+    /**
+     * 减少购物车
+     *
+     * @param shoppingCart 购物车
+     * @return {@link R}<{@link ShoppingCart}>
+     */
+    @PostMapping("/sub")
+    public R<ShoppingCart> sub(@RequestBody ShoppingCart shoppingCart){
+        // 设置用户
+        Long currentId = BaseContext.getCurrentId();
+        shoppingCart.setUserId(currentId);
+
+        // 基本查找条件
+        // 根据当前用户查找购物车内容
+        LambdaQueryWrapper<ShoppingCart> shoppingCartLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        shoppingCartLambdaQueryWrapper
+                .eq(ShoppingCart::getUserId,currentId);
+        Long dishId = shoppingCart.getDishId();
+
+        // 判断菜品或套餐
+        if (dishId!=null){
+            shoppingCartLambdaQueryWrapper
+                    .eq(ShoppingCart::getDishId,shoppingCart.getDishId());
+        }else {
+            shoppingCartLambdaQueryWrapper
+                    .eq(ShoppingCart::getSetmealId,shoppingCart.getSetmealId());
+        }
+        ShoppingCart one = shoppingCartService.getOne(shoppingCartLambdaQueryWrapper);
+        Integer number = one.getNumber();
+
+        if (number != 0){
+            one.setNumber(number - 1);
+            shoppingCartService.updateById(one);
+        }else {
+            shoppingCartService.removeById(one);
+        }
+        return R.success(one);
+    }
 }

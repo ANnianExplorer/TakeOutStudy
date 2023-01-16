@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
 import com.yzh.reggie.common.BaseContext;
 import com.yzh.reggie.common.CustomException;
 import com.yzh.reggie.entity.*;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implements OrderService {
+public class OrdersServiceImpl extends ServiceImpl<OrderMapper, Orders> implements OrdersService {
 
     @Resource
     private OrderDetailService orderDetailService;
@@ -40,35 +39,35 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     @Override
     @Transactional
     public void submit(Orders orders) {
-        // 获得当前用户id
-        Long currentId = BaseContext.getCurrentId();
+        //获得当前用户id
+        Long userId = BaseContext.getCurrentId();
 
-        // 查询当前用户的购物车数据
-        LambdaQueryWrapper<ShoppingCart> shoppingCartLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        shoppingCartLambdaQueryWrapper.eq(ShoppingCart::getUserId,currentId);
-        List<ShoppingCart> shoppingCarts = shoppingCartService.list(shoppingCartLambdaQueryWrapper);
+        //查询当前用户的购物车数据
+        LambdaQueryWrapper<ShoppingCart> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ShoppingCart::getUserId, userId);
+        List<ShoppingCart> shoppingCarts = shoppingCartService.list(wrapper);
 
-        if (shoppingCarts == null || shoppingCarts.size() == 0){
-            throw new CustomException("当前购物车为空");
+        if (shoppingCarts == null || shoppingCarts.size() == 0) {
+            throw new CustomException("购物车为空，不能下单");
         }
 
-        // 查用户
-        User user = userService.getById(currentId);
+        //查询用户数据
+        User user = userService.getById(userId);
 
-        // 查地址
+        //查询地址数据
         Long addressBookId = orders.getAddressBookId();
         AddressBook addressBook = addressBookService.getById(addressBookId);
-        if (addressBook == null){
-            throw new CustomException("收货地址不能为空！");
+        if (addressBook == null) {
+            throw new CustomException("用户地址信息有误，不能下单");
         }
 
-        // 计算金额
+        long orderId = IdWorker.getId();//订单号
+
         AtomicInteger amount = new AtomicInteger(0);
 
-        // IdWorker.getId() 获得订单号
         List<OrderDetail> orderDetails = shoppingCarts.stream().map((item) -> {
             OrderDetail orderDetail = new OrderDetail();
-            orderDetail.setOrderId(IdWorker.getId());
+            orderDetail.setOrderId(orderId);
             orderDetail.setNumber(item.getNumber());
             orderDetail.setDishFlavor(item.getDishFlavor());
             orderDetail.setDishId(item.getDishId());
@@ -78,17 +77,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
             orderDetail.setAmount(item.getAmount());
             amount.addAndGet(item.getAmount().multiply(new BigDecimal(item.getNumber())).intValue());
             return orderDetail;
-
         }).collect(Collectors.toList());
 
-        // 向订单表插入数据
-        orders.setId(IdWorker.getId());
+
+        orders.setId(orderId);
         orders.setOrderTime(LocalDateTime.now());
         orders.setCheckoutTime(LocalDateTime.now());
         orders.setStatus(2);
         orders.setAmount(new BigDecimal(amount.get()));//总金额
-        orders.setUserId(currentId);
-        orders.setNumber(String.valueOf(IdWorker.getId()));
+        orders.setUserId(userId);
+        orders.setNumber(String.valueOf(orderId));
         orders.setUserName(user.getName());
         orders.setConsignee(addressBook.getConsignee());
         orders.setPhone(addressBook.getPhone());
@@ -96,15 +94,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
                 + (addressBook.getCityName() == null ? "" : addressBook.getCityName())
                 + (addressBook.getDistrictName() == null ? "" : addressBook.getDistrictName())
                 + (addressBook.getDetail() == null ? "" : addressBook.getDetail()));
-
         //向订单表插入数据，一条数据
         this.save(orders);
 
-        // 向明细表插入数据
+        //向订单明细表插入数据，多条数据
         orderDetailService.saveBatch(orderDetails);
 
-        // 清空购物车数据
-        shoppingCartService.remove(shoppingCartLambdaQueryWrapper);
-
+        //清空购物车数据
+        shoppingCartService.remove(wrapper);
     }
 }

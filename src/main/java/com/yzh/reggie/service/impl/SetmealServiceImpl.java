@@ -112,7 +112,7 @@ public class SetmealServiceImpl extends ServiceImpl<SetmealMapper, Setmeal> impl
      */
     @Override
     public SetmealDto getSetmealByDish(Long id) {
-        // 查询套餐几本信息
+        // 查询套餐基本信息
         Setmeal setmeal = this.getById(id);
 
         SetmealDto setmealDto = new SetmealDto();
